@@ -1,5 +1,5 @@
 /* ============ CONFIGURE ME ============ */
-const ADMIN_PASSWORD = "zappy2026"; // change before sharing this file
+const ADMIN_PASSWORD = atob("emFwcHkyMDI2"); // base64 encoded — change before sharing
 
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -173,13 +173,14 @@ genBtn.addEventListener('click', async () => {
   if(demoMode){
     setTimeout(() => {
       const pool = readLocalPool();
-      const openId = Object.keys(pool).find(id => !pool[id].claimed);
-      if(!openId){
+      const openIds = Object.keys(pool).filter(id => !pool[id].claimed);
+      if(!openIds.length){
         showToast('Nothing left to claim');
         genBtn.disabled = false;
         refreshUI();
         return;
       }
+      const openId = openIds[Math.floor(Math.random() * openIds.length)];
       pool[openId].claimed = true;
       writeLocalPool(pool);
       accounts = pool;
@@ -188,11 +189,12 @@ genBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Firebase: try each open account with an atomic transaction until one commits.
+  // Firebase: pick a random open account and claim it atomically.
   const openIds = Object.keys(accounts).filter(id => !accounts[id].claimed);
+  const shuffled = openIds.sort(() => Math.random() - 0.5);
   let claimedId = null, claimedVal = null;
 
-  for(const id of openIds){
+  for(const id of shuffled){
     const ref = db.ref('accounts/' + id + '/claimed');
     const res = await ref.transaction(current => (current === false || current === null) ? true : undefined);
     if(res.committed){

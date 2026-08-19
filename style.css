@@ -1,7 +1,7 @@
 :root{
     --ink:#0A0E14;
-    --panel:#131A24;
-    --panel-2:#1B2430;
+    --panel:rgba(19,26,36,0.65);
+    --panel-2:rgba(27,36,48,0.7);
     --volt:#E7FF4D;
     --cobalt:#4D7CFF;
     --fog:#8892A0;
@@ -34,6 +34,13 @@
     align-items:center;
     gap:10px;
     margin-bottom:6px;
+    padding:14px 18px;
+    background:var(--panel);
+    backdrop-filter:blur(16px) saturate(140%);
+    -webkit-backdrop-filter:blur(16px) saturate(140%);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    box-shadow:0 4px 24px rgba(0,0,0,0.2);
   }
   .bolt-mark{width:30px;height:30px;flex-shrink:0;}
   .bolt-mark path{fill:var(--volt);}
@@ -51,8 +58,10 @@
     line-height:1.5;
   }
   .demo-banner{
-    background:rgba(255,93,93,0.12);
-    border:1px solid rgba(255,93,93,0.35);
+    background:rgba(255,93,93,0.08);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,93,93,0.25);
     color:#FFB4B4;
     font-size:12.5px;
     line-height:1.5;
@@ -64,13 +73,16 @@
 
   .stage{
     background:var(--panel);
-    border:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border:1px solid rgba(255,255,255,0.1);
     border-radius:20px;
     padding:32px 22px 26px;
     text-align:center;
     position:relative;
     overflow:hidden;
     margin-bottom:18px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.25);
   }
   .stock-row{
     display:flex;
@@ -120,8 +132,15 @@
     color:var(--fog);
     font-size:13.5px;
     line-height:1.5;
-    margin:0 auto 22px;
+    margin:0 auto 10px;
     max-width:280px;
+  }
+  .rules-line{
+    color:var(--fog);
+    font-size:11.5px;
+    margin:0 auto 18px;
+    opacity:0.8;
+    letter-spacing:0.02em;
   }
 
   .btn{
@@ -166,11 +185,14 @@
   .result{
     display:none;
     background:var(--panel-2);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
     border:1px solid rgba(231,255,77,0.25);
     border-radius:14px;
     padding:16px;
     margin-top:16px;
     text-align:left;
+    box-shadow:0 4px 24px rgba(0,0,0,0.2);
   }
   .result.show{display:block;}
   .result-label{
@@ -224,7 +246,9 @@
   .modal-bg{
     display:none;
     position:fixed;inset:0;
-    background:rgba(5,7,10,0.72);
+    background:rgba(5,7,10,0.55);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
     z-index:100;
     align-items:flex-end;
     justify-content:center;
@@ -232,13 +256,16 @@
   .modal-bg.show{display:flex;}
   .modal{
     background:var(--panel);
+    backdrop-filter:blur(22px) saturate(150%);
+    -webkit-backdrop-filter:blur(22px) saturate(150%);
     width:100%;
     max-width:480px;
     border-radius:20px 20px 0 0;
     padding:22px 20px 30px;
     max-height:85vh;
     overflow-y:auto;
-    border-top:1px solid rgba(255,255,255,0.08);
+    border-top:1px solid rgba(255,255,255,0.12);
+    box-shadow:0 -8px 40px rgba(0,0,0,0.35);
   }
   .modal-head{
     display:flex;align-items:center;justify-content:space-between;
@@ -289,6 +316,9 @@
     gap:10px;
     padding:10px 12px;
     background:var(--panel-2);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.06);
     border-radius:10px;
     margin-bottom:8px;
   }
@@ -320,6 +350,9 @@
   .stat{
     flex:1;
     background:var(--panel-2);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.06);
     border-radius:10px;
     padding:12px;
     text-align:center;
@@ -328,6 +361,9 @@
   .stat .l{font-size:10.5px;color:var(--fog);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;}
   .setup-box{
     background:var(--panel-2);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.06);
     border-radius:10px;
     padding:12px 13px;
     font-size:12px;
@@ -341,4 +377,18 @@
     border-radius:4px;
     font-family:'JetBrains Mono',monospace;
     font-size:11px;
+  }
+
+  .glass{
+    background:var(--panel);
+    backdrop-filter:blur(16px) saturate(140%);
+    -webkit-backdrop-filter:blur(16px) saturate(140%);
+    border:1px solid rgba(255,255,255,0.1);
+    box-shadow:0 8px 32px rgba(0,0,0,0.25);
+  }
+  .glass-2{
+    background:var(--panel-2);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.06);
   }
