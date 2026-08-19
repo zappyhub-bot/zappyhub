@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Zappy Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --ink:#0A0E14;
+    --panel:#131A24;
+    --panel-2:#1B2430;
+    --volt:#E7FF4D;
+    --cobalt:#4D7CFF;
+    --fog:#8892A0;
+    --paper:#F4F6F9;
+    --danger:#FF5D5D;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(77,124,255,0.16), transparent 45%),
+      radial-gradient(circle at 90% 15%, rgba(231,255,77,0.10), transparent 40%);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  .header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .bolt-mark{width:30px;height:30px;flex-shrink:0;}
+  .bolt-mark path{fill:var(--volt);}
+  .wordmark{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:-0.02em;
+  }
+  .wordmark span{color:var(--volt);}
+  .tagline{
+    color:var(--fog);
+    font-size:13.5px;
+    margin:2px 0 28px;
+    line-height:1.5;
+  }
+  .demo-banner{
+    background:rgba(255,93,93,0.12);
+    border:1px solid rgba(255,93,93,0.35);
+    color:#FFB4B4;
+    font-size:12.5px;
+    line-height:1.5;
+    padding:10px 12px;
+    border-radius:10px;
+    margin-bottom:20px;
+  }
+  .demo-banner b{color:#fff;}
+
+  .stage{
+    background:var(--panel);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:20px;
+    padding:32px 22px 26px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .stock-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    font-size:13px;
+    color:var(--fog);
+    margin-bottom:22px;
+  }
+  .stock-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--volt);
+    box-shadow:0 0 8px var(--volt);
+  }
+  .stock-dot.empty{background:var(--danger);box-shadow:0 0 8px var(--danger);}
+
+  #bolt-stage{width:120px;height:120px;margin:0 auto 6px;}
+  #bolt-stage path{
+    fill:none;
+    stroke:var(--volt);
+    stroke-width:5;
+    stroke-linejoin:round;
+    stroke-linecap:round;
+    stroke-dasharray:340;
+    stroke-dashoffset:340;
+    filter:drop-shadow(0 0 0 rgba(231,255,77,0));
+    transition:filter 0.2s;
+  }
+  #bolt-stage.charged path{
+    stroke-dashoffset:0;
+    transition:stroke-dashoffset 0.5s cubic-bezier(.2,.9,.3,1);
+    filter:drop-shadow(0 0 14px rgba(231,255,77,0.65));
+  }
+  #bolt-stage.flash path{
+    fill:var(--volt);
+    filter:drop-shadow(0 0 22px rgba(231,255,77,0.9));
+  }
+
+  .stage-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:19px;
+    margin:6px 0 4px;
+  }
+  .stage-sub{
+    color:var(--fog);
+    font-size:13.5px;
+    line-height:1.5;
+    margin:0 auto 22px;
+    max-width:280px;
+  }
+
+  .btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    border-radius:14px;
+    padding:16px 24px;
+    width:100%;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{
+    background:var(--volt);
+    color:#0A0E14;
+    box-shadow:0 8px 24px rgba(231,255,77,0.18);
+  }
+  .btn-primary:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+    box-shadow:none;
+  }
+  .btn-ghost{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.14);
+    color:var(--paper);
+  }
+  .btn-cobalt{
+    background:var(--cobalt);
+    color:#fff;
+  }
+  .btn-danger{
+    background:rgba(255,93,93,0.12);
+    border:1px solid rgba(255,93,93,0.35);
+    color:#FFB4B4;
+  }
+  .btn-sm{padding:10px 14px;font-size:13.5px;width:auto;}
+
+  .result{
+    display:none;
+    background:var(--panel-2);
+    border:1px solid rgba(231,255,77,0.25);
+    border-radius:14px;
+    padding:16px;
+    margin-top:16px;
+    text-align:left;
+  }
+  .result.show{display:block;}
+  .result-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--volt);
+    margin-bottom:8px;
+    font-weight:600;
+  }
+  .result-value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    line-height:1.6;
+    word-break:break-all;
+    color:var(--paper);
+    white-space:pre-wrap;
+    margin-bottom:14px;
+  }
+  .toast{
+    position:fixed;
+    bottom:22px;left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--paper);
+    color:var(--ink);
+    padding:10px 18px;
+    border-radius:100px;
+    font-size:13px;
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition:all 0.25s ease;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .footer{
+    margin-top:auto;
+    padding-top:34px;
+    text-align:center;
+  }
+  .admin-link{
+    background:none;border:none;
+    color:var(--fog);
+    font-size:12.5px;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+
+  .modal-bg{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(5,7,10,0.72);
+    z-index:100;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .modal-bg.show{display:flex;}
+  .modal{
+    background:var(--panel);
+    width:100%;
+    max-width:480px;
+    border-radius:20px 20px 0 0;
+    padding:22px 20px 30px;
+    max-height:85vh;
+    overflow-y:auto;
+    border-top:1px solid rgba(255,255,255,0.08);
+  }
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .modal-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;font-size:17px;
+  }
+  .close-x{
+    background:none;border:none;color:var(--fog);
+    font-size:20px;cursor:pointer;padding:4px 8px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--fog);
+    margin:16px 0 6px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  input[type=password], textarea{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:10px;
+    color:var(--paper);
+    padding:12px 13px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+    resize:vertical;
+  }
+  textarea{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    min-height:110px;
+    line-height:1.6;
+  }
+  input:focus, textarea:focus{
+    outline:2px solid var(--cobalt);
+    outline-offset:1px;
+  }
+  .hint{font-size:11.5px;color:var(--fog);margin-top:6px;line-height:1.5;}
+
+  .pool-list{margin-top:18px;}
+  .pool-item{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;
+    padding:10px 12px;
+    background:var(--panel-2);
+    border-radius:10px;
+    margin-bottom:8px;
+  }
+  .pool-item .val{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--paper);
+    word-break:break-all;
+  }
+  .pool-item.claimed .val{color:var(--fog);text-decoration:line-through;}
+  .pill{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    padding:3px 7px;
+    border-radius:100px;
+    flex-shrink:0;
+    font-weight:600;
+  }
+  .pill.open{background:rgba(231,255,77,0.15);color:var(--volt);}
+  .pill.claimed{background:rgba(136,146,160,0.15);color:var(--fog);}
+  .del-x{
+    background:none;border:none;color:var(--danger);
+    font-size:16px;cursor:pointer;padding:2px 6px;flex-shrink:0;
+  }
+  .stat-row{
+    display:flex;gap:10px;margin-top:14px;
+  }
+  .stat{
+    flex:1;
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:12px;
+    text-align:center;
+  }
+  .stat .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;}
+  .stat .l{font-size:10.5px;color:var(--fog);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;}
+  .setup-box{
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:12px 13px;
+    font-size:12px;
+    color:var(--fog);
+    line-height:1.6;
+    margin-top:16px;
+  }
+  .setup-box code{
+    background:rgba(255,255,255,0.06);
+    padding:1px 5px;
+    border-radius:4px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="header">
+    <svg class="bolt-mark" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-13h-7l1-7z"/></svg>
+    <div class="wordmark">zappy<span>hub</span></div>
+  </div>
+  <div class="tagline">Tap the button. Get an account. It's yours alone — once it's claimed, no one else can take it.</div>
+
+  <div id="demoBanner" class="demo-banner" style="display:none;">
+    <b>Demo mode.</b> This install isn't connected to a shared database yet, so claims are only tracked on this device — anyone on a different phone or browser could still grab the same account. Open Admin → Setup for two‑minute instructions to fix this.
+  </div>
+
+  <div class="stage">
+    <div class="stock-row">
+      <div id="stockDot" class="stock-dot"></div>
+      <span id="stockText">Checking stock…</span>
+    </div>
+
+    <svg id="bolt-stage" viewBox="0 0 100 100">
+      <path d="M55 8 20 55h22l-6 37 39-47H53l2-37z"/>
+    </svg>
+
+    <div class="stage-title" id="stageTitle">Ready when you are</div>
+    <div class="stage-sub" id="stageSub">Every account here goes to exactly one person. Hit generate to claim yours.</div>
+
+    <button class="btn btn-primary" id="genBtn">Generate</button>
+
+    <div class="result" id="result">
+      <div class="result-label" id="resultLabel">Your account</div>
+      <div class="result-value" id="resultValue"></div>
+      <button class="btn btn-cobalt btn-sm" id="copyBtn">Copy</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="admin-link" id="adminOpen">Admin</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-bg" id="loginModalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Admin sign-in</div>
+      <button class="close-x" id="loginClose">&times;</button>
+    </div>
+    <label for="pwInput">Password</label>
+    <input type="password" id="pwInput" placeholder="Enter admin password">
+    <div class="hint">Default password is <code>zappy2026</code> — change ADMIN_PASSWORD near the top of the file's script before you go live.</div>
+    <button class="btn btn-primary" style="margin-top:18px;" id="pwSubmit">Sign in</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL MODAL -->
+<div class="modal-bg" id="adminModalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Admin</div>
+      <button class="close-x" id="adminClose">&times;</button>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n" id="statOpen">0</div><div class="l">Available</div></div>
+      <div class="stat"><div class="n" id="statClaimed">0</div><div class="l">Claimed</div></div>
+      <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Total</div></div>
+    </div>
+
+    <label for="addArea">Add accounts (one per line)</label>
+    <textarea id="addArea" placeholder="e.g.&#10;user1@mail.com:P@ssw0rd1&#10;user2@mail.com:P@ssw0rd2"></textarea>
+    <div class="hint">Each line becomes one giveaway — one line, one claim, one person.</div>
+    <button class="btn btn-primary btn-sm" style="margin-top:10px;" id="addBtn">Add to pool</button>
+
+    <label style="margin-top:22px;">Pool</label>
+    <div class="pool-list" id="poolList"></div>
+
+    <label>Setup</label>
+    <div class="setup-box">
+      To make claims work across every visitor (not just this device), connect a free Firebase Realtime Database:
+      <br>1. Create a project at firebase.google.com → Build → Realtime Database → Create (test mode).
+      <br>2. Project settings → your web app → copy the config object.
+      <br>3. Paste it into <code>firebaseConfig</code> near the top of this file's &lt;script&gt;, replacing the placeholder.
+      <br>4. Reload — the demo banner disappears once it's connected.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ CONFIGURE ME ============ */
+const ADMIN_PASSWORD = "zappy2026"; // change before sharing this file
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+};
+/* ======================================= */
+
+let demoMode = firebaseConfig.apiKey === "YOUR_API_KEY";
+let db = null;
+let accounts = {}; // id -> {value, claimed}
+let claimedThisDevice = localStorage.getItem('zappyhub_claimed_id') || null;
+let claimedThisDeviceValue = localStorage.getItem('zappyhub_claimed_value') || null;
+
+const genBtn = document.getElementById('genBtn');
+const boltStage = document.getElementById('bolt-stage');
+const stageTitle = document.getElementById('stageTitle');
+const stageSub = document.getElementById('stageSub');
+const result = document.getElementById('result');
+const resultValue = document.getElementById('resultValue');
+const stockText = document.getElementById('stockText');
+const stockDot = document.getElementById('stockDot');
+const toast = document.getElementById('toast');
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 1600);
+}
+
+/* ---------- storage backend ---------- */
+if(!demoMode){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  }catch(e){
+    demoMode = true;
+    console.error(e);
+  }
+}
+if(demoMode){
+  document.getElementById('demoBanner').style.display = 'block';
+  if(!localStorage.getItem('zappyhub_demo_pool')){
+    localStorage.setItem('zappyhub_demo_pool', JSON.stringify({}));
+  }
+}
+
+function readLocalPool(){
+  return JSON.parse(localStorage.getItem('zappyhub_demo_pool') || '{}');
+}
+function writeLocalPool(pool){
+  localStorage.setItem('zappyhub_demo_pool', JSON.stringify(pool));
+}
+
+function refreshUI(){
+  const ids = Object.keys(accounts);
+  const openCount = ids.filter(id => !accounts[id].claimed).length;
+  const claimedCount = ids.length - openCount;
+
+  stockText.textContent = openCount > 0
+    ? (openCount + ' account' + (openCount===1?'':'s') + ' left')
+    : 'All claimed — none left right now';
+  stockDot.classList.toggle('empty', openCount === 0);
+
+  document.getElementById('statOpen').textContent = openCount;
+  document.getElementById('statClaimed').textContent = claimedCount;
+  document.getElementById('statTotal').textContent = ids.length;
+
+  renderPoolList();
+
+  if(claimedThisDevice && accounts[claimedThisDevice]){
+    stageTitle.textContent = 'Already claimed';
+    stageSub.textContent = 'This device already generated an account. Here it is again:';
+    genBtn.disabled = true;
+    genBtn.textContent = 'Already claimed';
+    resultValue.textContent = claimedThisDeviceValue;
+    result.classList.add('show');
+    boltStage.classList.add('charged');
+  } else if(openCount === 0){
+    stageTitle.textContent = 'Out of stock';
+    stageSub.textContent = 'Every account has been claimed. Check back once more are added.';
+    genBtn.disabled = true;
+    genBtn.textContent = 'Generate';
+  } else {
+    stageTitle.textContent = 'Ready when you are';
+    stageSub.textContent = 'Every account here goes to exactly one person. Hit generate to claim yours.';
+    genBtn.disabled = false;
+    genBtn.textContent = 'Generate';
+  }
+}
+
+function renderPoolList(){
+  const list = document.getElementById('poolList');
+  const ids = Object.keys(accounts);
+  if(ids.length === 0){
+    list.innerHTML = '<div class="hint">No accounts added yet.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  ids.forEach(id => {
+    const a = accounts[id];
+    const row = document.createElement('div');
+    row.className = 'pool-item' + (a.claimed ? ' claimed' : '');
+    row.innerHTML = `
+      <div class="val">${escapeHtml(a.value)}</div>
+      <span class="pill ${a.claimed ? 'claimed' : 'open'}">${a.claimed ? 'Claimed' : 'Open'}</span>
+      <button class="del-x" title="Remove">&times;</button>
+    `;
+    row.querySelector('.del-x').addEventListener('click', () => removeAccount(id));
+    list.appendChild(row);
+  });
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- live data ---------- */
+if(!demoMode){
+  db.ref('accounts').on('value', snap => {
+    accounts = snap.val() || {};
+    refreshUI();
+  });
+} else {
+  accounts = readLocalPool();
+  refreshUI();
+}
+
+/* ---------- generate / claim ---------- */
+genBtn.addEventListener('click', async () => {
+  if(claimedThisDevice) return;
+  genBtn.disabled = true;
+  boltStage.classList.add('charged');
+
+  if(demoMode){
+    setTimeout(() => {
+      const pool = readLocalPool();
+      const openId = Object.keys(pool).find(id => !pool[id].claimed);
+      if(!openId){
+        showToast('Nothing left to claim');
+        genBtn.disabled = false;
+        refreshUI();
+        return;
+      }
+      pool[openId].claimed = true;
+      writeLocalPool(pool);
+      accounts = pool;
+      claimAndReveal(openId, pool[openId].value);
+    }, 550);
+    return;
+  }
+
+  // Firebase: try each open account with an atomic transaction until one commits.
+  const openIds = Object.keys(accounts).filter(id => !accounts[id].claimed);
+  let claimedId = null, claimedVal = null;
+
+  for(const id of openIds){
+    const ref = db.ref('accounts/' + id + '/claimed');
+    const res = await ref.transaction(current => (current === false || current === null) ? true : undefined);
+    if(res.committed){
+      claimedId = id;
+      claimedVal = accounts[id].value;
+      break;
+    }
+  }
+
+  setTimeout(() => {
+    if(!claimedId){
+      showToast('Nothing left to claim');
+      genBtn.disabled = false;
+      refreshUI();
+      return;
+    }
+    claimAndReveal(claimedId, claimedVal);
+  }, 400);
+});
+
+function claimAndReveal(id, value){
+  claimedThisDevice = id;
+  claimedThisDeviceValue = value;
+  localStorage.setItem('zappyhub_claimed_id', id);
+  localStorage.setItem('zappyhub_claimed_value', value);
+  boltStage.classList.add('flash');
+  resultValue.textContent = value;
+  result.classList.add('show');
+  refreshUI();
+}
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(resultValue.textContent).then(() => showToast('Copied'));
+});
+
+/* ---------- admin: login ---------- */
+const loginModalBg = document.getElementById('loginModalBg');
+const adminModalBg = document.getElementById('adminModalBg');
+
+document.getElementById('adminOpen').addEventListener('click', () => {
+  loginModalBg.classList.add('show');
+  document.getElementById('pwInput').focus();
+});
+document.getElementById('loginClose').addEventListener('click', () => loginModalBg.classList.remove('show'));
+loginModalBg.addEventListener('click', e => { if(e.target === loginModalBg) loginModalBg.classList.remove('show'); });
+
+document.getElementById('pwSubmit').addEventListener('click', tryLogin);
+document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+function tryLogin(){
+  const val = document.getElementById('pwInput').value;
+  if(val === ADMIN_PASSWORD){
+    document.getElementById('pwInput').value = '';
+    loginModalBg.classList.remove('show');
+    adminModalBg.classList.add('show');
+    refreshUI();
+  } else {
+    showToast('Wrong password');
+  }
+}
+
+document.getElementById('adminClose').addEventListener('click', () => adminModalBg.classList.remove('show'));
+adminModalBg.addEventListener('click', e => { if(e.target === adminModalBg) adminModalBg.classList.remove('show'); });
+
+/* ---------- admin: add / remove ---------- */
+document.getElementById('addBtn').addEventListener('click', () => {
+  const area = document.getElementById('addArea');
+  const lines = area.value.split('\n').map(l => l.trim()).filter(Boolean);
+  if(lines.length === 0) return;
+
+  if(demoMode){
+    const pool = readLocalPool();
+    lines.forEach(line => {
+      const id = 'a' + Date.now() + Math.random().toString(36).slice(2,7);
+      pool[id] = { value: line, claimed: false };
+    });
+    writeLocalPool(pool);
+    accounts = pool;
+    refreshUI();
+  } else {
+    lines.forEach(line => {
+      const ref = db.ref('accounts').push();
+      ref.set({ value: line, claimed: false });
+    });
+  }
+  area.value = '';
+  showToast(lines.length + ' added');
+});
+
+function removeAccount(id){
+  if(demoMode){
+    const pool = readLocalPool();
+    delete pool[id];
+    writeLocalPool(pool);
+    accounts = pool;
+    refreshUI();
+  } else {
+    db.ref('accounts/' + id).remove();
+  }
+}
+</script>
+</body>
+</html>
