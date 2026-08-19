@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Zappy Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="header">
+    <svg class="bolt-mark" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-13h-7l1-7z"/></svg>
+    <div class="wordmark">zappy<span>hub</span></div>
+  </div>
+  <div class="tagline">Tap the button. Get an account. It's yours alone — once it's claimed, no one else can take it.</div>
+
+  <div id="demoBanner" class="demo-banner" style="display:none;">
+    <b>Demo mode.</b> This install isn't connected to a shared database yet, so claims are only tracked on this device — anyone on a different phone or browser could still grab the same account. Open Admin → Setup for two‑minute instructions to fix this.
+  </div>
+
+  <div class="stage">
+    <div class="stock-row">
+      <div id="stockDot" class="stock-dot"></div>
+      <span id="stockText">Checking stock…</span>
+    </div>
+
+    <svg id="bolt-stage" viewBox="0 0 100 100">
+      <path d="M55 8 20 55h22l-6 37 39-47H53l2-37z"/>
+    </svg>
+
+    <div class="stage-title" id="stageTitle">Ready when you are</div>
+    <div class="stage-sub" id="stageSub">Every account here goes to exactly one person. Hit generate to claim yours.</div>
+
+    <button class="btn btn-primary" id="genBtn">Generate</button>
+
+    <div class="result" id="result">
+      <div class="result-label" id="resultLabel">Your account</div>
+      <div class="result-value" id="resultValue"></div>
+      <button class="btn btn-cobalt btn-sm" id="copyBtn">Copy</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="admin-link" id="adminOpen">Admin</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-bg" id="loginModalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Admin sign-in</div>
+      <button class="close-x" id="loginClose">&times;</button>
+    </div>
+    <label for="pwInput">Password</label>
+    <input type="password" id="pwInput" placeholder="Enter admin password">
+    <div class="hint">Default password is <code>zappy2026</code> — change ADMIN_PASSWORD near the top of the file's script before you go live.</div>
+    <button class="btn btn-primary" style="margin-top:18px;" id="pwSubmit">Sign in</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL MODAL -->
+<div class="modal-bg" id="adminModalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Admin</div>
+      <button class="close-x" id="adminClose">&times;</button>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n" id="statOpen">0</div><div class="l">Available</div></div>
+      <div class="stat"><div class="n" id="statClaimed">0</div><div class="l">Claimed</div></div>
+      <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Total</div></div>
+    </div>
+
+    <label for="addArea">Add accounts (one per line)</label>
+    <textarea id="addArea" placeholder="e.g.&#10;user1@mail.com:P@ssw0rd1&#10;user2@mail.com:P@ssw0rd2"></textarea>
+    <div class="hint">Each line becomes one giveaway — one line, one claim, one person.</div>
+    <button class="btn btn-primary btn-sm" style="margin-top:10px;" id="addBtn">Add to pool</button>
+
+    <label style="margin-top:22px;">Pool</label>
+    <div class="pool-list" id="poolList"></div>
+
+    <label>Setup</label>
+    <div class="setup-box">
+      To make claims work across every visitor (not just this device), connect a free Firebase Realtime Database:
+      <br>1. Create a project at firebase.google.com → Build → Realtime Database → Create (test mode).
+      <br>2. Project settings → your web app → copy the config object.
+      <br>3. Paste it into <code>firebaseConfig</code> near the top of this file's &lt;script&gt;, replacing the placeholder.
+      <br>4. Reload — the demo banner disappears once it's connected.
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
