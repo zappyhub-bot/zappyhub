@@ -32,9 +32,11 @@ const SEED_ACCOUNTS = [
 
 let demoMode = firebaseConfig.apiKey === "YOUR_API_KEY";
 let db = null;
-let accounts = {}; // id -> {value, claimed}
+let accounts = {}; // id -> {value, claimed, claimedAt}
 let claimedThisDevice = localStorage.getItem('zappyhub_claimed_id') || null;
 let claimedThisDeviceValue = localStorage.getItem('zappyhub_claimed_value') || null;
+let notifyCount = 0;
+let lastKnownCount = 0;
 
 const genBtn = document.getElementById('genBtn');
 const boltStage = document.getElementById('bolt-stage');
@@ -45,6 +47,10 @@ const resultValue = document.getElementById('resultValue');
 const stockText = document.getElementById('stockText');
 const stockDot = document.getElementById('stockDot');
 const toast = document.getElementById('toast');
+const shareBtn = document.getElementById('shareBtn');
+const poolSearch = document.getElementById('poolSearch');
+const notifyBell = document.getElementById('notifyBell');
+const notifyBadge = document.getElementById('notifyBadge');
 
 function showToast(msg){
   toast.textContent = msg;
@@ -95,7 +101,8 @@ function refreshUI(){
   document.getElementById('statClaimed').textContent = claimedCount;
   document.getElementById('statTotal').textContent = ids.length;
 
-  renderPoolList();
+  const searchVal = poolSearch ? poolSearch.value : '';
+  renderPoolList(searchVal);
 
   if(claimedThisDevice && accounts[claimedThisDevice]){
     stageTitle.textContent = 'Already claimed';
@@ -118,20 +125,26 @@ function refreshUI(){
   }
 }
 
-function renderPoolList(){
+function renderPoolList(filterText){
   const list = document.getElementById('poolList');
   const ids = Object.keys(accounts);
-  if(ids.length === 0){
-    list.innerHTML = '<div class="hint">No accounts added yet.</div>';
+  const filtered = ids.filter(id => {
+    if(!filterText) return true;
+    const a = accounts[id];
+    return a.value.toLowerCase().includes(filterText.toLowerCase());
+  });
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="hint">No accounts match your search.</div>';
     return;
   }
   list.innerHTML = '';
-  ids.forEach(id => {
+  filtered.forEach(id => {
     const a = accounts[id];
     const row = document.createElement('div');
     row.className = 'pool-item' + (a.claimed ? ' claimed' : '');
+    const timeStr = a.claimedAt ? new Date(a.claimedAt).toLocaleString() : '';
     row.innerHTML = `
-      <div class="val">${escapeHtml(a.value)}</div>
+      <div class="val">${escapeHtml(a.value)}${timeStr ? '<div style="font-size:10px;color:var(--fog);margin-top:2px;">' + escapeHtml(timeStr) + '</div>' : ''}</div>
       <span class="pill ${a.claimed ? 'claimed' : 'open'}">${a.claimed ? 'Claimed' : 'Open'}</span>
       <button class="del-x" title="Remove">&times;</button>
     `;
@@ -158,9 +171,11 @@ if(!demoMode){
   db.ref('accounts').on('value', snap => {
     accounts = snap.val() || {};
     refreshUI();
+    updateNotifyBadge();
   });
 } else {
   accounts = readLocalPool();
+  lastKnownCount = Object.keys(accounts).filter(id => !accounts[id].claimed).length;
   refreshUI();
 }
 
@@ -182,6 +197,7 @@ genBtn.addEventListener('click', async () => {
       }
       const openId = openIds[Math.floor(Math.random() * openIds.length)];
       pool[openId].claimed = true;
+      pool[openId].claimedAt = Date.now();
       writeLocalPool(pool);
       accounts = pool;
       claimAndReveal(openId, pool[openId].value);
@@ -200,6 +216,7 @@ genBtn.addEventListener('click', async () => {
     if(res.committed){
       claimedId = id;
       claimedVal = accounts[id].value;
+      await db.ref('accounts/' + id + '/claimedAt').set(Date.now());
       break;
     }
   }
@@ -222,6 +239,7 @@ function claimAndReveal(id, value){
   localStorage.setItem('zappyhub_claimed_value', value);
   boltStage.classList.add('flash');
   setTimeout(() => boltStage.classList.remove('flash'), 400);
+  spawnConfetti();
   resultValue.textContent = value;
   result.classList.add('show');
   showToast('Account claimed');
@@ -287,6 +305,108 @@ document.getElementById('addBtn').addEventListener('click', () => {
   document.getElementById('addArea').value = '';
   showToast('Added ' + lines.length + ' account' + (lines.length===1?'':'s'));
 });
+
+/* ---------- search ---------- */
+if(poolSearch){
+  poolSearch.addEventListener('input', () => {
+    renderPoolList(poolSearch.value);
+  });
+}
+
+/* ---------- share ---------- */
+if(shareBtn){
+  shareBtn.addEventListener('click', async () => {
+    const text = resultValue.textContent;
+    if(!text) return;
+    try {
+      if(navigator.share){
+        await navigator.share({ title: 'ZappyHub', text: 'I just claimed an account on ZappyHub! ' + text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        showToast('Copied to clipboard');
+      }
+    } catch(e){
+      showToast('Share failed');
+    }
+  });
+}
+
+/* ---------- bulk actions ---------- */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const rows = [['Value','Claimed','Claimed At']];
+  Object.keys(accounts).forEach(id => {
+    const a = accounts[id];
+    rows.push([a.value, a.claimed ? 'Yes' : 'No', a.claimedAt ? new Date(a.claimedAt).toISOString() : '']);
+  });
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'zappyhub_pool_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported');
+});
+
+document.getElementById('clearClaimedBtn').addEventListener('click', () => {
+  if(!confirm('Remove all claimed accounts from the pool?')) return;
+  if(demoMode){
+    const pool = readLocalPool();
+    Object.keys(pool).forEach(id => {
+      if(pool[id].claimed) delete pool[id];
+    });
+    writeLocalPool(pool);
+    accounts = pool;
+  } else {
+    const updates = {};
+    Object.keys(accounts).forEach(id => {
+      if(accounts[id].claimed) updates[id] = null;
+    });
+    db.ref('accounts').update(updates);
+  }
+  showToast('Cleared claimed accounts');
+});
+
+/* ---------- notification bell ---------- */
+function updateNotifyBadge(){
+  const openCount = Object.keys(accounts).filter(id => !accounts[id].claimed).length;
+  if(openCount > lastKnownCount && lastKnownCount > 0){
+    notifyCount += (openCount - lastKnownCount);
+    notifyBadge.textContent = notifyCount > 99 ? '99+' : notifyCount;
+    notifyBadge.classList.add('show');
+  } else if(openCount === 0){
+    notifyBadge.classList.remove('show');
+  }
+  lastKnownCount = openCount;
+}
+if(notifyBell){
+  notifyBell.addEventListener('click', () => {
+    notifyBadge.classList.remove('show');
+    notifyCount = 0;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    if(genBtn && !genBtn.disabled) genBtn.click();
+  });
+}
+
+/* ---------- success animation ---------- */
+function spawnConfetti(){
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['var(--volt)', 'var(--cobalt)', '#fff', 'var(--paper)'];
+  for(let i = 0; i < 30; i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = (30 + Math.random() * 40) + 'vw';
+    c.style.top = (20 + Math.random() * 20) + 'vh';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDelay = (Math.random() * 0.3) + 's';
+    c.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+    container.appendChild(c);
+  }
+  setTimeout(() => container.remove(), 1500);
+}
 
 function removeAccount(id){
   if(demoMode){

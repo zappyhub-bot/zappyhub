@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#E7FF4D">
+<link rel="manifest" href="manifest.json">
 <title>Zappy Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -44,7 +46,10 @@
     <div class="result" id="result">
       <div class="result-label" id="resultLabel">Your account</div>
       <div class="result-value" id="resultValue"></div>
-      <button class="btn btn-cobalt btn-sm" id="copyBtn">Copy</button>
+      <div class="result-actions">
+        <button class="btn-ghost-sm" id="copyBtn">Copy</button>
+        <button class="btn-ghost-sm" id="shareBtn">Share</button>
+      </div>
     </div>
   </div>
 
@@ -55,6 +60,14 @@
 </div>
 
 <div class="toast" id="toast">Copied</div>
+
+<div class="notify-bell" id="notifyBell" title="New accounts available">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--paper)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+  </svg>
+  <div class="notify-badge" id="notifyBadge">0</div>
+</div>
 
 <!-- ADMIN LOGIN MODAL -->
 <div class="modal-bg" id="loginModalBg">
@@ -84,10 +97,19 @@
       <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Total</div></div>
     </div>
 
+    <div class="search-row">
+      <input type="text" class="search-input" id="poolSearch" placeholder="Search pool...">
+    </div>
+
     <label for="addArea">Add accounts (one per line)</label>
     <textarea id="addArea" placeholder="e.g.&#10;user1@mail.com:P@ssw0rd1&#10;user2@mail.com:P@ssw0rd2"></textarea>
     <div class="hint">Each line becomes one giveaway — one line, one claim, one person.</div>
     <button class="btn btn-primary btn-sm" style="margin-top:10px;" id="addBtn">Add to pool</button>
+
+    <div class="bulk-actions">
+      <button class="btn-ghost-sm" id="exportBtn">Export CSV</button>
+      <button class="btn-ghost-sm" id="clearClaimedBtn">Clear claimed</button>
+    </div>
 
     <label style="margin-top:22px;">Pool</label>
     <div class="pool-list" id="poolList"></div>

@@ -379,6 +379,119 @@
     font-size:11px;
   }
 
+  .search-row{
+    display:flex;gap:8px;margin-top:18px;
+  }
+  .search-input{
+    flex:1;
+    background:var(--panel-2);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px;
+    color:var(--paper);
+    padding:10px 12px;
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+  }
+  .search-input:focus{
+    outline:2px solid var(--cobalt);
+    outline-offset:1px;
+  }
+  .bulk-actions{
+    display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;
+  }
+
+  .result-actions{
+    display:flex;gap:8px;margin-top:10px;
+  }
+  .btn-ghost-sm{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.14);
+    color:var(--paper);
+    padding:8px 12px;
+    border-radius:10px;
+    font-size:12px;
+    cursor:pointer;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    transition:all 0.15s ease;
+  }
+  .btn-ghost-sm:hover{
+    border-color:var(--volt);
+    color:var(--volt);
+  }
+
+  .notify-bell{
+    position:fixed;
+    top:18px;right:18px;
+    width:40px;height:40px;
+    border-radius:12px;
+    background:var(--panel);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    z-index:90;
+    box-shadow:0 4px 16px rgba(0,0,0,0.2);
+    transition:all 0.2s ease;
+  }
+  .notify-bell:hover{
+    transform:scale(1.05);
+    border-color:rgba(255,255,255,0.15);
+  }
+  .notify-badge{
+    position:absolute;
+    top:-4px;right:-4px;
+    width:16px;height:16px;
+    background:var(--danger);
+    border-radius:50%;
+    font-size:10px;
+    font-weight:700;
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    display:none;
+  }
+  .notify-badge.show{display:flex;}
+
+  .confetti-container{
+    position:fixed;inset:0;
+    pointer-events:none;
+    z-index:200;
+    overflow:hidden;
+  }
+  .confetti{
+    position:absolute;
+    width:8px;height:8px;
+    border-radius:2px;
+    animation:confettiFall 1.2s ease-out forwards;
+  }
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(120px) rotate(720deg);opacity:0;}
+  }
+
+  .pulse-ring{
+    position:absolute;
+    inset:-20px;
+    border:2px solid var(--volt);
+    border-radius:50%;
+    opacity:0;
+    pointer-events:none;
+  }
+  #bolt-stage.pulse .pulse-ring{
+    animation:pulseOut 0.8s ease-out;
+  }
+  @keyframes pulseOut{
+    0%{transform:scale(0.8);opacity:0.6;}
+    100%{transform:scale(1.4);opacity:0;}
+  }
+
+  @media (max-width: 480px) {
+    .notify-bell{top:12px;right:12px;width:36px;height:36px;}
+  }
+
   .glass{
     background:var(--panel);
     backdrop-filter:blur(16px) saturate(140%);

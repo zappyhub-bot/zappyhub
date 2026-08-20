@@ -1,0 +1,20 @@
+{
+  "name": "ZappyHub",
+  "short_name": "ZappyHub",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0A0E14",
+  "theme_color": "#E7FF4D",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/0A0E14/E7FF4D?text=ZH",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/0A0E14/E7FF4D?text=ZH",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
